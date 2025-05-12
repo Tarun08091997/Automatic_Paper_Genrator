@@ -1,0 +1,35 @@
+@media print {
+  .paper-container {
+    page-break-before: always; /* Ensure each paper starts on a new page */
+  }
+
+  .paper-container:first-of-type {
+    page-break-before: auto; /* No forced page break for the first paper */
+  }
+
+  /* Ensure table header repeats on new pages */
+  thead {
+    display: table-header-group;
+  }
+
+  /* Prevent row splitting */
+  tbody tr {
+    page-break-inside: avoid;
+  }
+
+  /* Allow table to split naturally, avoiding row breaks */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    page-break-inside: auto;
+  }
+
+  table, tr, td, th {
+    page-break-inside: auto;
+  }
+
+  /* 🔹 Add a top margin ONLY to pages that continue from a previous one */
+  @page {
+    margin-top: 20mm; /* Adjust this value as needed */
+  }
+}

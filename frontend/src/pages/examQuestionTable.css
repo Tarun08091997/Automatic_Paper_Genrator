@@ -1,0 +1,26 @@
+:root {
+    --font-bold: "Times New Roman", serif;
+    --font-normal: "Times New Roman", serif;
+    --font-size-bold: 18px;
+    --font-size-normal: 12px;
+  }
+  
+  .font-bold {
+    font-family: var(--font-bold);
+    font-size: var(--font-size-bold);
+    font-weight: bold;
+  }
+  
+  .font-normal {
+    font-family: var(--font-normal);
+    font-size: var(--font-size-normal);
+    font-weight: normal;
+  }
+
+  @media print {
+    /* Hide the print button */
+    .no-print {
+      display: none;
+    }
+  }
+   
