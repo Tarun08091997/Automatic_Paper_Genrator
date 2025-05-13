@@ -58,18 +58,23 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
 
   const paperData = useRef();
   paperData.current = [];
-  fileList.map((val) => paperData.current.push({}));
-  const setPaperData = (index,data)=>{
+  for(let i=0;i<(examData.sets * fileList.length);i++){
+    paperData.current.push({});
+  }
+
+  const setPaperData = (index,data,set)=>{
     // create an array and update it for data
-    paperData.current[index] = data;
+    const i = (index * examData.sets) + (set - 1);
+    paperData.current[i] = data;
     console.log(paperData.current);
     
   }
 
   const createZipFile = async () => {
     const zip = new JSZip();
+    // console.log(paperData.current);
     for (const paper of paperData.current) {
-      const { examData, data, selectedQuestions, questionSelector, instructions } = paper;
+      const { examData, data, selectedQuestions, questionSelector, instructions , setNo } = paper;
   
       try {
         const result = await generateExamDocx(
@@ -78,7 +83,8 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
           selectedQuestions,
           questionSelector,
           instructions,
-          false // to return blob, not save immediately
+          false, // to return blob, not save immediately
+          setNo,
         );
   
         zip.file(result.filename, result.blob);
@@ -107,7 +113,10 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
         {fileList.map((file, index) => (
           
           <div key={index} id={`paper-${index}`} className="paper-container p-4">
-            <CreatePaperCard
+            {
+              Array.from({length: examData.sets}, (_, i) => i + 1).map((set)=>(
+                <CreatePaperCard
+                key = {index*examData.sets + set}
               mcqs={[]} // If MCQs exist, pass them
               subjective={file.questions}
               examData={examData}
@@ -117,10 +126,13 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
                 subject: file.subject,
                 subjectCode: file.code,
               }}
-              setPaperData = {(data)=>setPaperData(index,data)}
+              setPaperData = {(data)=>setPaperData(index,data,set)}
               show={show} // Pass `show` prop to control visibility inside `CreatePaperCard`
               styles = {styles}
+              setNo={set}
             />
+              ))
+            }
           </div>
         ))}
       </div>

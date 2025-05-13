@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 
 const ExamData = ({ setExamData, setDataGiven }) => {
   const [localExamData, setLocalExamData] = useState({
-    examinationType: "",
-    month: "",
+    examinationType: "END TERM EXAMINATION",
+    month: "June",
     year: "2025",
     duration: "",
     units: 3,

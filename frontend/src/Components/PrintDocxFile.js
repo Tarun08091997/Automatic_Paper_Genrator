@@ -56,7 +56,7 @@ const fetchImage = async () => {
 
 
 
-const generateExamDocx = async (examData, data, selectedQuestions, questionSelector, instructions , singleDocx = true) => {
+const generateExamDocx = async (examData, data, selectedQuestions, questionSelector, instructions ,singleDocx = true , setNo = 1) => {
 
   console.log({
     examData,
@@ -64,6 +64,7 @@ const generateExamDocx = async (examData, data, selectedQuestions, questionSelec
     selectedQuestions,
     questionSelector,
     instructions,
+    setNo
   });
 
   const imageData = await fetchImage();
@@ -83,7 +84,7 @@ const generateExamDocx = async (examData, data, selectedQuestions, questionSelec
     children: [
       createText("Registration No. ........................ \t", 20),
       createText("    Exam Seat No. ....................... \t", 20),
-      createText("    Q.P Set ...........", 20),
+      createText(`    Q.P Set .....${setNo}.....`, 20),
     ],
     alignment: AlignmentType.CENTER,
     spacing: { after: 200 },
@@ -223,7 +224,7 @@ const generateExamDocx = async (examData, data, selectedQuestions, questionSelec
   } else {
     return {
       blob,
-      filename: `${data.subject}-${data.subjectCode}.docx`,
+      filename: `${data.subject}-${data.subjectCode} set-${setNo}.docx`,
     };
   }
 };

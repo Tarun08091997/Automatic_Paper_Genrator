@@ -7,7 +7,7 @@ import "./CreatePaperPage.css"
 import {generateExamDocx} from "./PrintDocxFile"
 
 
-const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show , styles}) => {
+const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show , styles,setNo = 1}) => {
   const paperRef = useRef(null);
   const [questionSelector, setQuestionSelector] = useState({ results: null });
   const [refreshCount, setRefreshCount] = useState(0);
@@ -67,7 +67,7 @@ const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show
 
   useEffect(()=>{
     setPaperData({
-      examData, data, selectedQuestions, questionSelector, instructions
+      examData, data, selectedQuestions, questionSelector, instructions , setNo : setNo
     })
   },[selectedQuestions,instructions])
 
@@ -201,7 +201,7 @@ const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show
           <div className="flex justify-between">
           <p>Registration No. .............</p>
           <p>Exam Seat No. .............</p>
-          <p>Q.P Set .....</p>
+          <p>Q.P Set ..{setNo}..</p>
           </div>
           <img src={logo} alt="University Logo" className="mx-auto w-32 mt-4" />
           <div className="flex justify-center space-x-2">
@@ -309,7 +309,7 @@ const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show
       
       {
         show && <button
-        onClick={() => generateExamDocx(examData, data, selectedQuestions, questionSelector, instructions)}
+        onClick={() => generateExamDocx(examData, data, selectedQuestions, questionSelector, instructions ,setNo = {setNo})}
         className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mt-4"
       >
         Print to DOCX
