@@ -5,30 +5,39 @@ import ExamData from "./ExamData";
 import AnalysisORPaper from "./AnalysisORPaper";
 
 const processFiles = async (filteredFiles) => {
+  const failedFiles = []; // Track names of failed files
+
   try {
-    // Use Promise.all to handle multiple asynchronous file parsing operations
     const fileData = await Promise.all(
       filteredFiles.map(async (file) => {
         try {
-          const data = await parseFile(file); // Parse each file
+          const data = await parseFile(file);
           return data;
         } catch (err) {
           console.error(`Error parsing file ${file.name}:`, err);
-          return null; // Return null or a default value for failed files
+          failedFiles.push(file.name); // Add to failed list
+          return null;
         }
       })
     );
 
-    // Filter out null values (failed files)
     const validFileData = fileData.filter((data) => data !== null);
 
-    console.log("Uploaded File Filtered Data:", validFileData); // Log the parsed data
-    return validFileData; // Return the parsed data for further use
+    // Show alert with failed file names, if any
+    if (failedFiles.length > 0) {
+      alert(
+        `Some files could not be processed:\n\n${failedFiles.join("\n")}`
+      );
+    }
+
+    console.log("Uploaded File Filtered Data:", validFileData);
+    return validFileData;
   } catch (err) {
     console.error("Error processing files:", err);
-    throw err; // Re-throw the error for handling in the calling function
+    throw err;
   }
 };
+
 
 function FileSelector() {
   const [fileList, setFileList] = useState([]);
@@ -38,7 +47,6 @@ function FileSelector() {
 
   const handleFileChange = (event) => {
     const files = Array.from(event.target.files);
-
     // Filter only Excel and CSV files
     const filteredFiles = files.filter((file) => {
       const ext = file.name.split(".").pop().toLowerCase();
@@ -70,7 +78,7 @@ function FileSelector() {
           {/* File Input */}
           <input
             type="file"
-            webkitdirectory="true"
+            // webkitdirectory="true"
             multiple
             onChange={handleFileChange}
             className="mb-4"

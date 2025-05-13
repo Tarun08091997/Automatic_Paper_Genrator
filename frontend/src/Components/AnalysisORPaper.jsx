@@ -6,7 +6,7 @@ export default function AnalysisORPaper({ setList, list, setViewFileSelector ,ex
     const [selectedSubjects , setSelectedSubjects] = useState([]);
     const [showPaper , setShowPaper] = useState(false);
     const [hideForPrint,setHideforPrint] = useState(false);
-
+    
     const getFilesofSelectedSubjects=()=>{
         return list.filter((file)=> selectedSubjects.includes(file.subject));
     }
