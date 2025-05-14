@@ -10,6 +10,9 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
   const [visibleIndex, setVisibleIndex] = useState(null);
 
   const containerRefs = useRef([]);
+  useEffect(() => {
+    containerRefs.current = containerRefs.current.slice(0, fileList.length);
+  }, [fileList.length]);
   
   const [styles, setStyles] = useState({
     instructions: {
@@ -60,9 +63,13 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
   });
 
   const paperData = useRef([]);
-  for (let i = 0; i < examData.sets * fileList.length; i++) {
-    paperData.current.push({});
-  }
+  useEffect(() => {
+    const newData = [];
+    for (let i = 0; i < examData.sets * fileList.length; i++) {
+      newData.push({});
+    }
+    paperData.current = newData;
+  }, []);
 
   const setPaperData = (index, data, set) => {
     const i = index * examData.sets + (set - 1);
@@ -71,28 +78,32 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
   };
 
   useEffect(() => {
-    const observers = [];
+    const handleScroll = () => {
+      let minDistance = Infinity;
+      let visibleIdx = 0;
 
-    containerRefs.current.forEach((ref, index) => {
-      if (!ref) return;
+      containerRefs.current.forEach((ref, index) => {
+        if (!ref) return;
 
-      const observer = new IntersectionObserver(
-        ([entry]) => {
-          if (entry.isIntersecting) {
-            setVisibleIndex(index);
-          }
-        },
-        { threshold: 0.5 }
-      );
+        const rect = ref.getBoundingClientRect();
+        const distance = Math.abs(rect.top - window.innerHeight / 2);
 
-      observer.observe(ref);
-      observers.push({ observer, ref });
-    });
+        if (distance < minDistance) {
+          minDistance = distance;
+          visibleIdx = index;
+        }
+      });
+
+      setVisibleIndex(visibleIdx);
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    // Trigger once on load
+    handleScroll();
 
     return () => {
-      observers.forEach(({ observer, ref }) => {
-        if (ref) observer.unobserve(ref);
-      });
+      window.removeEventListener("scroll", handleScroll);
     };
   }, []);
 
@@ -126,7 +137,7 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center flex-1 ${!show ? "hidden-print" : "bg-gray-100"}`} onClick={() => console.log(visibleIndex)} >
+    <div className={`flex flex-col items-center justify-center flex-1 ${!show ? "hidden-print" : "bg-gray-100"}`} onClick={() => console.log(visibleIndex , containerRefs)} >
       <div className={`w-full max-w-4xl bg-white rounded-lg ${!show ? "hidden-print" : "p-6 shadow-md"}`}>
         {show && (
           <div className="flex justify-between items-center mb-4">
@@ -145,7 +156,7 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
           >
             {visibleIndex === index && (
               <div className="fixed right-2 top-1/2 transform -translate-y-1/2 p-5 bg-red-950 text-white rounded-xl z-50 transition-opacity duration-500 opacity-100 animate-fade-in">
-                Similarity Matrix
+                {file.subject}
               </div>
             )}
             {Array.from({ length: examData.sets }, (_, i) => i + 1).map((set) => (
