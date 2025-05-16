@@ -10,6 +10,7 @@ export default function AnalysisORPaper({ setList, list, setViewFileSelector ,ex
     const getFilesofSelectedSubjects=()=>{
         return list.filter((file)=> selectedSubjects.includes(file.subject));
     }
+    
   return (
     <div className='flex flex-col'>
         {

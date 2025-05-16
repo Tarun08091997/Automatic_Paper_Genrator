@@ -1,5 +1,5 @@
 // Global development flag - set to false in production
-const DEV = true;
+const DEV = false;
 
 
 function getMaxValueKey(obj) {
@@ -21,7 +21,7 @@ const selectRandomQuestions = (array, count) => {
 }
 
 class SelectQuestions {
-  constructor(mcqs, subjective, examData) {
+  constructor(mcqs, subjective, examData,COS) {
     this.log = {}; // Contains all the log activity of system
     this.log["error"] = []
 
@@ -29,10 +29,13 @@ class SelectQuestions {
     this.mcqs = mcqs;
     this.subjective = subjective;
     this.examData = examData;
+    this.COS = COS;
     
     // Initialize tracking objects
     this.FinalUnitWiseMarkDistribution = {};
     this.FinalDifficultyWiseMarkDistribution = { 1: 0, 2: 0, 3: 0 };
+    this.FinalMarksByCOSDistribution = {}
+    this.FinalCOSBySectionDistribution={}
 
     this.reqMarksByDiff = []
     this.reqQuestionsByMarks = {};
@@ -75,6 +78,9 @@ class SelectQuestions {
       loop -= 1;
     }
 
+
+
+
     this.log["Final Results:"] = {
       "Final data structure from which questions are selected:" : this.data,
       "Required Question By Marks ": this.reqQuestionsByMarks,
@@ -84,6 +90,7 @@ class SelectQuestions {
 
     if(DEV){
       console.log("EXAM DATA : " , examData);
+      console.log("Selected Question" , this.selectedQuestions);
       this.printAll();
     }
   }
@@ -474,4 +481,4 @@ class SelectQuestions {
   }
 }
 
-export { SelectQuestions };
+export { SelectQuestions};

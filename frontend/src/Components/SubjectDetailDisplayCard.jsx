@@ -48,7 +48,7 @@ const SubjectDetailDisplayCard = ({ fileData, isSelected, onCheckboxChange}) => 
         <div className="mt-4 pt-4 border-t border-gray-200">
           {fileData ?  
                 ( 
-                <QuestionAnalytics mcqQuestions = {[]} subjectiveQuestions = {fileData.questions}/>
+                <QuestionAnalytics mcqQuestions = {[]} subjectiveQuestions = {fileData.questions} COS = {fileData.COS} unitCOS = {fileData.Unit_Wise_COS}/>
             
           ) : (
             <p className="text-gray-600">No data available.</p>

@@ -21,7 +21,7 @@ ChartJS.register(
   ChartDataLabels
 );
 
-const QuestionAnalytics = ({ mcqQuestions, subjectiveQuestions }) => {
+const QuestionAnalytics = ({ mcqQuestions, subjectiveQuestions , COS ,unitCOS}) => {
   console.log(subjectiveQuestions);
   // Questions per Unit for MCQs (Objective)
   const mcqQuestionsPerUnit = mcqQuestions.reduce((acc, question) => {
@@ -185,6 +185,74 @@ const QuestionAnalytics = ({ mcqQuestions, subjectiveQuestions }) => {
             options={commonOptions}
           />
         </div>
+
+        {/* Pie Chart for Marks Distribution by COs */}
+        <div className="h-[300px] mt-8">
+          <h2 className="text-xl font-semibold mb-4">Marks Distribution by COs</h2>
+          <Pie
+            data={{
+              labels: Object.keys(COS),
+              datasets: [
+                {
+                  label: "Marks per CO",
+                  data: Object.values(COS),
+                  backgroundColor: [
+                    "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"
+                  ],
+                },
+              ],
+            }}
+            options={pieChartOptions}
+          />
+        </div>
+
+        {/* Bar Chart for CO Marks per Unit */}
+        <div className="h-[300px] mt-8" onClick={() => console.log(unitCOS)}>
+          <h2 className="text-xl font-semibold mb-4">CO-wise Marks per Unit</h2>
+          <Bar
+            data={{
+              labels: Object.keys(unitCOS).map(unit => `Unit ${unit}`),
+              datasets: (() => {
+                const allCOs = new Set();
+                Object.values(unitCOS).forEach(coData =>
+                  Object.keys(coData).forEach(co => allCOs.add(co))
+                );
+
+                return Array.from(allCOs).map((co, index) => ({
+                  label: co,
+                  data: Object.keys(unitCOS).map(unit => unitCOS[unit][co] ?? 0),
+                  backgroundColor: ["#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF", "#FF9F40"][index % 6],
+                }));
+              })()
+            }}
+            options={{
+              ...commonOptions,
+              responsive: true,
+              plugins: {
+                legend: {
+                  position: "top",
+                },
+              },
+              scales: {
+                x: {
+                  title: {
+                    display: true,
+                    text: "Unit",
+                  },
+                },
+                y: {
+                  beginAtZero: true,
+                  title: {
+                    display: true,
+                    text: "Marks",
+                  },
+                },
+              },
+            }}
+          />
+        </div>
+
+
 
         {/* Bar Chart for Levels per Unit (Subjective Questions Only) */}
         <div className="h-[300px]" onClick={()=> console.log(unitPerLevel)}>

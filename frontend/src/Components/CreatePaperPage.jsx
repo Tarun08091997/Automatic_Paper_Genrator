@@ -4,11 +4,14 @@ import "./CreatePaperPage.css";
 import { generateExamDocx } from "./PrintDocxFile";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
+import SimilarityMatrix from "./SimilarityMatrix";
 
 export default function CreatePaperPage({ fileList, examData, setHideforPrint }) {
   const [show, setShow] = useState(true);
   const [visibleIndex, setVisibleIndex] = useState(null);
+  const [similarityMat , setSimiliratyMat] = useState([]);
 
+  
   const containerRefs = useRef([]);
   useEffect(() => {
     containerRefs.current = containerRefs.current.slice(0, fileList.length);
@@ -69,12 +72,20 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
       newData.push({});
     }
     paperData.current = newData;
+
+    const ls = [];
+    for(let i=0 ;i<fileList.length;i++){
+      ls.push({});
+    }
+    setSimiliratyMat(ls);
   }, []);
 
   const setPaperData = (index, data, set) => {
     const i = index * examData.sets + (set - 1);
     paperData.current[i] = data;
-    console.log(paperData.current);
+    
+
+    
   };
 
   useEffect(() => {
@@ -111,14 +122,13 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
     const zip = new JSZip();
 
     for (const paper of paperData.current) {
-      const { examData, data, selectedQuestions, questionSelector, instructions, setNo } = paper;
+      const { examData, data, selectedQuestions, instructions, setNo } = paper;
 
       try {
         const result = await generateExamDocx(
           examData,
           data,
           selectedQuestions,
-          questionSelector,
           instructions,
           false,
           setNo
@@ -155,9 +165,7 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
             className="paper-container p-4"
           >
             {visibleIndex === index && (
-              <div className="fixed right-2 top-1/2 transform -translate-y-1/2 p-5 bg-red-950 text-white rounded-xl z-50 transition-opacity duration-500 opacity-100 animate-fade-in">
-                {file.subject}
-              </div>
+              <SimilarityMatrix file={file} />
             )}
             {Array.from({ length: examData.sets }, (_, i) => i + 1).map((set) => (
               <CreatePaperCard
@@ -170,6 +178,7 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
                   semester: file.semester,
                   subject: file.subject,
                   subjectCode: file.code,
+                  COS : file.COS
                 }}
                 setPaperData={(data) => setPaperData(index, data, set)}
                 show={show}

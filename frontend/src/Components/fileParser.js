@@ -11,6 +11,9 @@ import jsPDF from "jspdf";
  * @returns {Promise<Array>} - A promise that resolves to the parsed data.
  */
 
+const COS = {};
+const Unit_Wise_COS = {};
+
 const getLevel = (level) => {
   const key = level?.trim().toLowerCase();
 
@@ -84,14 +87,29 @@ export const parseFile = async (file) => {
     const questions = []
     
     for(let q of rawQuestions){
+      if(q[1] == undefined){
+        continue;
+      }
+      const unit = getUnit(q[4]);
+
+      const qCO = q[6]?.toUpperCase();
+
       questions.push({
         "Question":q[1],
         "Marks":q[2],
-        "Unit":getUnit(q[4]),
+        "Unit": unit,
         "Level":getLevel(q[5]),
-        "CO":q[6],
+        "CO":qCO,
         "RBT":q[7]
       })
+
+
+      COS[qCO] = (COS[qCO] ?? 0) + parseInt(q[2]);
+      // Initialize the nested object if it doesn't exist
+      Unit_Wise_COS[unit] = Unit_Wise_COS[unit] ?? {};
+
+      // Now increment the specific qCO key
+      Unit_Wise_COS[unit][qCO] = (Unit_Wise_COS[unit][qCO] ?? 0) + parseInt(q[2]);
     }
 
     const data = {
@@ -99,8 +117,12 @@ export const parseFile = async (file) => {
       "semester" : dataResult[1][3],
       "subject": dataResult[2][1],
       "code": dataResult[2][3],
-      "questions" : questions
-    }    
+      "questions" : questions,
+      "COS" : COS,
+      "Unit_Wise_COS":Unit_Wise_COS
+    }  
+    
+    console.log(data);
     return data;
 
   } catch (error) {

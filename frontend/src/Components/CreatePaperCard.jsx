@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import logo from "../assets/CT_University_logo.png";
 import "./createPaperCard.css";
 import DistributionCharts from "./DistributionCharts";
-import { SelectQuestions } from "./selectQuestion";
+import { getCODistribution, SelectQuestions } from "./selectQuestion";
 import "./CreatePaperPage.css"
 import {generateExamDocx} from "./PrintDocxFile"
 
@@ -47,9 +47,9 @@ const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show
       setError(null);
 
       try {
-        const selector = new SelectQuestions(mcqs, subjective, examData);
+        const selector = new SelectQuestions(mcqs, subjective, examData , data.COS);
         const results = selector.getSelectedQuestions();
-
+        
         setQuestionSelector({
           instance: selector,
           results: results,
@@ -67,7 +67,7 @@ const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show
 
   useEffect(()=>{
     setPaperData({
-      examData, data, selectedQuestions, questionSelector, instructions , setNo : setNo
+      examData, data, selectedQuestions, instructions , setNo : setNo
     })
   },[selectedQuestions,instructions])
 

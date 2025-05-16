@@ -56,13 +56,12 @@ const fetchImage = async () => {
 
 
 
-const generateExamDocx = async (examData, data, selectedQuestions, questionSelector, instructions ,singleDocx = true , setNo = 1) => {
+const generateExamDocx = async (examData, data, selectedQuestions, instructions ,singleDocx = true , setNo = 1) => {
 
   console.log({
     examData,
     data,
     selectedQuestions,
-    questionSelector,
     instructions,
     setNo
   });
