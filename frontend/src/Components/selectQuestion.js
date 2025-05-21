@@ -30,6 +30,7 @@ class SelectQuestions {
     this.subjective = subjective;
     this.examData = examData;
     this.COS = COS;
+    console.log(COS);
     
     // Initialize tracking objects
     this.FinalUnitWiseMarkDistribution = {};
@@ -56,6 +57,7 @@ class SelectQuestions {
     this.requiredQuestionByMarks();
     this.requiredMarksByUnit();
     this.requiredQuestionByDifficulty();
+    this.createCODistribution();
     
 
   
@@ -91,6 +93,8 @@ class SelectQuestions {
     if(DEV){
       console.log("EXAM DATA : " , examData);
       console.log("Selected Question" , this.selectedQuestions);
+      console.log("CO Data By Section/ Marks" , this.FinalCOSBySectionDistribution);
+      console.log("Marks per CO in question Paper" , this.FinalMarksByCOSDistribution);
       this.printAll();
     }
   }
@@ -159,6 +163,21 @@ class SelectQuestions {
     this.initalRequiredDifficulty = [0, e, n, h];
   }
 
+  createCODistribution(){
+    const data = {};
+    Object.keys(this.COS).map((key)=>(
+      data[key] = 0
+    ))
+
+    this.FinalMarksByCOSDistribution = {...data};
+
+    Object.keys(this.data).map((key)=>(
+      this.FinalCOSBySectionDistribution[key] = {...data}
+    ))
+
+    
+  }
+
   calibrateQueByDifficulty() {
     for (let i = 1; i <= 3; i++) {
       if (this.reqMarksByDiff[i] >= 0) continue;
@@ -181,6 +200,7 @@ class SelectQuestions {
     
     for (const mark of Object.keys(this.examData.sections)) {
       this.reqQuestionsByMarks[mark] = this.examData.sections[mark].inputQuestions;
+      // this.FinalCOSBySectionDistribution[mark] = [];
     }
   }
 
@@ -218,6 +238,7 @@ class SelectQuestions {
     let unit = getMaxValueKey(this.reqMarksByUnits);
     if (!unit){
       this.log["error"].push("Error While getting unit for a question");
+      AlertCircle("Problem in Marks By Unit Data")
       return;
     };
 
@@ -227,10 +248,6 @@ class SelectQuestions {
       delete this.reqMarksByUnits[unit];
       unit = getMaxValueKey(this.reqMarksByUnits);
     }
-    if (!unit){
-      this.log["error"].push("Error While getting unit for a question");
-      return;
-    };
 
     
     const logData = {};
@@ -278,13 +295,20 @@ class SelectQuestions {
 
     // Update all tracking
     this.selectedQuestions[q.Marks].push(q);
+    
     this.data[q.Marks][unit][selectedLevel] = 
       this.data[q.Marks][unit][selectedLevel].filter(item => item !== q);
+
+    this.FinalCOSBySectionDistribution[q.Marks][q.CO] += 1;
+    this.FinalMarksByCOSDistribution[q.CO] += q.Marks;
 
     this.reqMarksByUnits[unit] -= q.Marks;
     this.reqMarksByDiff[selectedLevel] -= q.Marks;
     this.FinalUnitWiseMarkDistribution[unit] += q.Marks;
     this.FinalDifficultyWiseMarkDistribution[selectedLevel] += q.Marks;
+    
+    
+    // this.FinalCOSBySectionDistribution[q.Marks] += 
 
     this.calibrateQueByDifficulty();
     this.calibrateMarksByUnits();
@@ -476,7 +500,9 @@ class SelectQuestions {
     return {
       selectedQuestions: this.selectedQuestions,
       unitDistribution: this.FinalUnitWiseMarkDistribution,
-      difficultyDistribution: this.FinalDifficultyWiseMarkDistribution
+      difficultyDistribution: this.FinalDifficultyWiseMarkDistribution,
+      CObySection : this.FinalCOSBySectionDistribution,
+      MarksbyCO : this.FinalMarksByCOSDistribution,
     };
   }
 }
