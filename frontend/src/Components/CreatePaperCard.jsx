@@ -7,7 +7,7 @@ import "./CreatePaperPage.css"
 import {generateExamDocx} from "./PrintDocxFile"
 
 
-const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show , styles,setNo = 1}) => {
+const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show ,setNo = 1}) => {
   const paperRef = useRef(null);
   const [questionSelector, setQuestionSelector] = useState({ results: null });
   const [refreshCount, setRefreshCount] = useState(0);
@@ -20,6 +20,54 @@ const CreatePaperCard = ({ mcqs, subjective, examData, data , setPaperData, show
     TopInstruction: [],
     SectionInstruction: []
   });
+
+  const styles = {
+      instructions: {
+        fontSize: "14px",
+        fontStyle: "italic",
+        marginBottom: "10px",
+        fontFamily: "'Verdana', sans-serif",
+      },
+      examName: {
+        fontSize: "14px",
+        fontWeight: "bold",
+        fontFamily: "'Arial', sans-serif",
+      },
+      schoolInfoKey: {
+        fontSize: "14px",
+        fontFamily: "'Courier New', monospace",
+      },
+      schoolInfoValue: {
+        fontSize: "14px",
+        fontWeight: "bold",
+        fontFamily: "'Courier New', monospace",
+      },
+      sectionHeading: {
+        fontSize: "18px",
+        fontWeight: "bold",
+        marginTop: "20px",
+        marginBottom: "10px",
+        textAlign: "center",
+        fontFamily: "'Georgia', serif",
+      },
+      sectionInstruction: {
+        fontSize: "14px",
+        fontStyle: "italic",
+        marginBottom: "10px",
+        fontFamily: "'Verdana', sans-serif",
+      },
+      questionHeading: {
+        fontSize: "16px",
+        fontWeight: "bold",
+        textAlign: "center",
+        marginBottom: "10px",
+        fontFamily: "'Tahoma', sans-serif",
+      },
+      questionRow: {
+        fontSize: "14px",
+        fontFamily: "'Lucida Console', monospace",
+      },
+    };
 
 
   useEffect(() => {
