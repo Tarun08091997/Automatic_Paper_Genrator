@@ -1,17 +1,70 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-export default function SimilarityMatrix({ data , visibleIndex }) {
-  const [showMatrix, setShowMatrix] = useState(file.sets > 1);
+export default function SimilarityMatrix({ data, visibleIndex, sets = 1 }) {
+  const [matrices, setMatrices] = useState({});
+  const [showMatrix, setShowMatrix] = useState(false);
+
+  useEffect(() => {
+    if (!data || !Array.isArray(data) || data.length === 0) return;
+
+    const allMatrices = {};
+
+    for (let subjectIndex = 0; subjectIndex < data.length; subjectIndex++) {
+      const setsData = data[subjectIndex];
+      if (!setsData || setsData.length < sets) continue;
+
+      const subjectMatrix = [];
+
+      for (let i = 0; i < sets; i++) {
+        const row = [];
+        for (let j = 0; j < sets; j++) {
+          if (i === j) {
+            row.push("—");
+          } else {
+            row.push(getSimilarity(setsData[i], setsData[j]));
+          }
+        }
+        subjectMatrix.push(row);
+      }
+
+      allMatrices[subjectIndex] = subjectMatrix;
+    }
+
+    setMatrices(allMatrices);
+    console.log("Similarity Matrix" , allMatrices);
+  }, [data, sets]);
 
   const getSimilarity = (setA, setB) => {
-    if (!setA.selectedQuestions || !setB.selectedQuestions) return 0;
+    if (!setA?.selectedQuestions || !setB?.selectedQuestions) return 0;
 
-    const idsA = new Set(setA.selectedQuestions.map(q => q.id || q.text));
-    const idsB = new Set(setB.selectedQuestions.map(q => q.id || q.text));
+    const flattenQuestions = (selected) =>
+      Object.values(selected).flat();
 
-    const common = [...idsA].filter(id => idsB.has(id));
-    return common.length;
+    const questionsA = flattenQuestions(setA.selectedQuestions);
+    const questionsB = flattenQuestions(setB.selectedQuestions);
+
+    const mapB = new Map();
+    for (const q of questionsB) {
+      const key = q.Question;
+      mapB.set(key, q.Marks);
+    }
+
+    let commonMarks = 0;
+
+    for (const qA of questionsA) {
+      const key = qA.Question;
+      if (mapB.has(key)) {
+        const mark = parseFloat(qA.Marks) || 0;
+        commonMarks += mark;
+      }
+    }
+
+    return commonMarks;
   };
+
+
+  const matrix = matrices[visibleIndex] || [];
+  const file = data?.[visibleIndex]?.[0]?.data || {};
 
   return (
     <div className="fixed right-2 top-1/2 transform -translate-y-1/2 z-50 text-white transition-opacity duration-500 opacity-100">
@@ -21,13 +74,14 @@ export default function SimilarityMatrix({ data , visibleIndex }) {
             Similarity Matrix
           </h4>
           <p className="text-sm text-gray-300 mb-3 text-center">
-            Subject: <span className="font-bold text-white">{file.subject}</span>
+            Subject:{" "}
+            <span className="font-bold text-white">{file.subject}</span>
           </p>
           <table className="table-auto w-full text-sm border-collapse">
             <thead>
               <tr>
                 <th className="border border-gray-700 p-1">Set</th>
-                {setsData.map((_, i) => (
+                {matrix.map((_, i) => (
                   <th key={i} className="border border-gray-700 p-1">
                     {i + 1}
                   </th>
@@ -35,14 +89,17 @@ export default function SimilarityMatrix({ data , visibleIndex }) {
               </tr>
             </thead>
             <tbody>
-              {setsData.map((setA, i) => (
+              {matrix.map((row, i) => (
                 <tr key={i}>
                   <td className="border border-gray-700 p-1 font-bold text-center">
                     {i + 1}
                   </td>
-                  {setsData.map((setB, j) => (
-                    <td key={j} className="border border-gray-700 p-1 text-center">
-                      {i === j ? "—" : getSimilarity(setA, setB)}
+                  {row.map((val, j) => (
+                    <td
+                      key={j}
+                      className="border border-gray-700 p-1 text-center"
+                    >
+                      {val}
                     </td>
                   ))}
                 </tr>
@@ -68,4 +125,3 @@ export default function SimilarityMatrix({ data , visibleIndex }) {
     </div>
   );
 }
-

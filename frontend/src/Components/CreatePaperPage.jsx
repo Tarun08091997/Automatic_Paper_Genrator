@@ -5,12 +5,13 @@ import { generateExamDocx } from "./PrintDocxFile";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import SimilarityMatrix from "./SimilarityMatrix";
+import { dateTimeValue } from "docx";
 
 export default function CreatePaperPage({ fileList, examData, setHideforPrint }) {
   
   const [visibleIndex, setVisibleIndex] = useState(null);
   const containerRefs = useRef([]);    // To get which paper in view
-  const paperData = useRef([]);    // To collect all the data
+  const [pData,setPData] = useState([]);    // To collect all the data
 
 
   useEffect(() => {
@@ -20,54 +21,67 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
   
   useEffect(() => {
     const newData = [];
-    for (let i = 0; i < examData.sets * fileList.length; i++) {
-      newData.push({});
+    for (let i = 0; i < fileList.length; i++) {
+      const a = [];
+      for(let j=0;j<examData.sets;j++){
+        a.push({})
+      }
+      newData.push(a);
     }
-    paperData.current = newData;
-  }, []);
+    setPData(newData);
+  }, [fileList, examData.sets]);
 
   const setPaperData = (index, data, set) => {
-    const i = index * examData.sets + (set - 1);
-    paperData.current[i] = data;   
+    const d = [...pData];
+  if (!d[index]) {
+    d[index] = [];
+  }
+
+  d[index][set - 1] = data;
+
+  setPData(d);
+};
+
+
+
+useEffect(() => {
+  const handleScroll = () => {
+    let maxVisibleHeight = 0;
+    let visibleIdx = 0;
+
+    containerRefs.current.forEach((ref, index) => {
+      if (!ref) return;
+
+      const rect = ref.getBoundingClientRect();
+      const visibleTop = Math.max(rect.top, 0);
+      const visibleBottom = Math.min(rect.bottom, window.innerHeight);
+      const visibleHeight = Math.max(visibleBottom - visibleTop, 0);
+
+      if (visibleHeight > maxVisibleHeight) {
+        maxVisibleHeight = visibleHeight;
+        visibleIdx = index;
+      }
+    });
+
+    setVisibleIndex(visibleIdx);
   };
 
+  window.addEventListener("scroll", handleScroll, { passive: true });
+
+  // Trigger once on load
+  handleScroll();
+
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+  };
+}, []);
 
 
-//  To get Visible INdex of paper ( or get whihc sub is visible)
-  useEffect(() => {
-    const handleScroll = () => {
-      let minDistance = Infinity;
-      let visibleIdx = 0;
-
-      containerRefs.current.forEach((ref, index) => {
-        if (!ref) return;
-
-        const rect = ref.getBoundingClientRect();
-        const distance = Math.abs(rect.top - window.innerHeight / 2);
-
-        if (distance < minDistance) {
-          minDistance = distance;
-          visibleIdx = index;
-        }
-      });
-
-      setVisibleIndex(visibleIdx);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    // Trigger once on load
-    handleScroll();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   const createZipFile = async () => {
     const zip = new JSZip();
 
-    for (const paper of paperData.current) {
+    for (const paper of pData) {
       const { examData, data, selectedQuestions, instructions, setNo } = paper;
 
 
@@ -133,7 +147,7 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
         ))}
       </div>
 
-      {/* <SimilarityMatrix data = {paperData.current} visibleIndex = {visibleIndex} /> */}
+      <SimilarityMatrix data = {pData} visibleIndex = {visibleIndex} sets = {examData.sets}/>
 
       <button
         onClick={createZipFile}
