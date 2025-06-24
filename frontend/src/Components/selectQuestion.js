@@ -30,7 +30,7 @@ class SelectQuestions {
     this.subjective = subjective;
     this.examData = examData;
     this.COS = COS;
-    console.log(COS);
+    // console.log(COS);
     
     // Initialize tracking objects
     this.FinalUnitWiseMarkDistribution = {};
@@ -79,6 +79,8 @@ class SelectQuestions {
       done = this.calibrateDifficulty();
       loop -= 1;
     }
+
+    // console.log(this.selectedQuestions);
 
 
 

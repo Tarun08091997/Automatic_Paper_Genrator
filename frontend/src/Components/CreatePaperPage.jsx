@@ -5,124 +5,85 @@ import { generateExamDocx } from "./PrintDocxFile";
 import JSZip from "jszip";
 import { saveAs } from "file-saver";
 import SimilarityMatrix from "./SimilarityMatrix";
+import { dateTimeValue } from "docx";
 
 export default function CreatePaperPage({ fileList, examData, setHideforPrint }) {
-  const [show, setShow] = useState(true);
-  const [visibleIndex, setVisibleIndex] = useState(null);
-  const [similarityMat , setSimiliratyMat] = useState([]);
-
   
-  const containerRefs = useRef([]);
+  const [visibleIndex, setVisibleIndex] = useState(null);
+  const containerRefs = useRef([]);    // To get which paper in view
+  const [pData,setPData] = useState([]);    // To collect all the data
+
+
   useEffect(() => {
     containerRefs.current = containerRefs.current.slice(0, fileList.length);
   }, [fileList.length]);
-  
-  const [styles, setStyles] = useState({
-    instructions: {
-      fontSize: "14px",
-      fontStyle: "italic",
-      marginBottom: "10px",
-      fontFamily: "'Verdana', sans-serif",
-    },
-    examName: {
-      fontSize: "14px",
-      fontWeight: "bold",
-      fontFamily: "'Arial', sans-serif",
-    },
-    schoolInfoKey: {
-      fontSize: "14px",
-      fontFamily: "'Courier New', monospace",
-    },
-    schoolInfoValue: {
-      fontSize: "14px",
-      fontWeight: "bold",
-      fontFamily: "'Courier New', monospace",
-    },
-    sectionHeading: {
-      fontSize: "18px",
-      fontWeight: "bold",
-      marginTop: "20px",
-      marginBottom: "10px",
-      textAlign: "center",
-      fontFamily: "'Georgia', serif",
-    },
-    sectionInstruction: {
-      fontSize: "14px",
-      fontStyle: "italic",
-      marginBottom: "10px",
-      fontFamily: "'Verdana', sans-serif",
-    },
-    questionHeading: {
-      fontSize: "16px",
-      fontWeight: "bold",
-      textAlign: "center",
-      marginBottom: "10px",
-      fontFamily: "'Tahoma', sans-serif",
-    },
-    questionRow: {
-      fontSize: "14px",
-      fontFamily: "'Lucida Console', monospace",
-    },
-  });
 
-  const paperData = useRef([]);
+  
   useEffect(() => {
     const newData = [];
-    for (let i = 0; i < examData.sets * fileList.length; i++) {
-      newData.push({});
+    for (let i = 0; i < fileList.length; i++) {
+      const a = [];
+      for(let j=0;j<examData.sets;j++){
+        a.push({})
+      }
+      newData.push(a);
     }
-    paperData.current = newData;
-
-    const ls = [];
-    for(let i=0 ;i<fileList.length;i++){
-      ls.push({});
-    }
-    setSimiliratyMat(ls);
-  }, []);
+    setPData(newData);
+  }, [fileList, examData.sets]);
 
   const setPaperData = (index, data, set) => {
-    const i = index * examData.sets + (set - 1);
-    paperData.current[i] = data;
-    
+    const d = [...pData];
+  if (!d[index]) {
+    d[index] = [];
+  }
 
-    
+  d[index][set - 1] = data;
+
+  setPData(d);
+};
+
+
+
+useEffect(() => {
+  const handleScroll = () => {
+    let maxVisibleHeight = 0;
+    let visibleIdx = 0;
+
+    containerRefs.current.forEach((ref, index) => {
+      if (!ref) return;
+
+      const rect = ref.getBoundingClientRect();
+      const visibleTop = Math.max(rect.top, 0);
+      const visibleBottom = Math.min(rect.bottom, window.innerHeight);
+      const visibleHeight = Math.max(visibleBottom - visibleTop, 0);
+
+      if (visibleHeight > maxVisibleHeight) {
+        maxVisibleHeight = visibleHeight;
+        visibleIdx = index;
+      }
+    });
+
+    setVisibleIndex(visibleIdx);
   };
 
-  useEffect(() => {
-    const handleScroll = () => {
-      let minDistance = Infinity;
-      let visibleIdx = 0;
+  window.addEventListener("scroll", handleScroll, { passive: true });
 
-      containerRefs.current.forEach((ref, index) => {
-        if (!ref) return;
+  // Trigger once on load
+  handleScroll();
 
-        const rect = ref.getBoundingClientRect();
-        const distance = Math.abs(rect.top - window.innerHeight / 2);
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+  };
+}, []);
 
-        if (distance < minDistance) {
-          minDistance = distance;
-          visibleIdx = index;
-        }
-      });
 
-      setVisibleIndex(visibleIdx);
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    // Trigger once on load
-    handleScroll();
-
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, []);
 
   const createZipFile = async () => {
     const zip = new JSZip();
 
-    for (const paper of paperData.current) {
+    for (const paper of pData) {
       const { examData, data, selectedQuestions, instructions, setNo } = paper;
+
 
       try {
         const result = await generateExamDocx(
@@ -147,15 +108,15 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center flex-1 ${!show ? "hidden-print" : "bg-gray-100"}`} onClick={() => console.log(visibleIndex , containerRefs)} >
-      <div className={`w-full max-w-4xl bg-white rounded-lg ${!show ? "hidden-print" : "p-6 shadow-md"}`}>
-        {show && (
-          <div className="flex justify-between items-center mb-4">
+    <div className={`flex flex-col items-center justify-center flex-1 bg-gray-100`}>
+      <div className={`w-full max-w-4xl bg-white rounded-lg p-6 shadow-md`}>
+        <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold text-gray-700">
               Total Subjects: {fileList.length}
             </h3>
-          </div>
-        )}
+        </div>
+
+
 
         {fileList.map((file, index) => (
           <div
@@ -164,9 +125,6 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
             id={`paper-${index}`}
             className="paper-container p-4"
           >
-            {visibleIndex === index && (
-              <SimilarityMatrix file={file} />
-            )}
             {Array.from({ length: examData.sets }, (_, i) => i + 1).map((set) => (
               <CreatePaperCard
                 key={index * examData.sets + set}
@@ -181,14 +139,15 @@ export default function CreatePaperPage({ fileList, examData, setHideforPrint })
                   COS : file.COS
                 }}
                 setPaperData={(data) => setPaperData(index, data, set)}
-                show={show}
-                styles={styles}
+                show={true}
                 setNo={set}
               />
             ))}
           </div>
         ))}
       </div>
+
+      <SimilarityMatrix data = {pData} visibleIndex = {visibleIndex} sets = {examData.sets}/>
 
       <button
         onClick={createZipFile}
